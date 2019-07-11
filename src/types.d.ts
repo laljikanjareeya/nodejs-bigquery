@@ -1,7 +1,7 @@
 /**
  * BigQuery API
  */
-declare namespace bigquery {
+export namespace bigquery {
   /**
    * Information about a single training query run for the model.
    */
