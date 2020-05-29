@@ -38,6 +38,10 @@ import {
 import {GoogleErrorBody} from '@google-cloud/common/build/src/util';
 import bigquery from './types';
 
+export interface QueryParameterTypeCallback {
+  (err: Error | null, response?: bigquery.IQueryParameter | null): void;
+}
+
 export interface RequestCallback<T> {
   (err: Error | null, response?: T | null): void;
 }
@@ -1110,7 +1114,8 @@ export class BigQuery extends common.Service {
   ): void | Promise<JobResponse> {
     const options = typeof opts === 'object' ? opts : {query: opts};
     if ((!options || !options.query) && !options.pageToken) {
-      throw new Error('A SQL query string is required.');
+      callback!(new Error('A SQL query string is required.'));
+      return;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1124,7 +1129,8 @@ export class BigQuery extends common.Service {
 
     if (options.destination) {
       if (!(options.destination instanceof Table)) {
-        throw new Error('Destination must be a Table object.');
+        callback!(new Error('Destination must be a Table object.'));
+        return;
       }
 
       query.destinationTable = {
@@ -1149,9 +1155,10 @@ export class BigQuery extends common.Service {
 
           if (query.types) {
             if (!is.object(query.types)) {
-              throw new Error(
+              callback!(new Error(
                 'Provided types must match the value type passed to `params`'
-              );
+              ));
+              return;
             }
 
             if (query.types[namedParameter]) {
@@ -1160,9 +1167,10 @@ export class BigQuery extends common.Service {
                 query.types[namedParameter]
               );
             } else {
-              throw new Error(
+              callback!(new Error(
                 `Type not provided for parameter: ${namedParameter}`
-              );
+              ));
+              return;
             }
           } else {
             queryParameter = BigQuery.valueToQueryParameter_(value);
@@ -1176,13 +1184,15 @@ export class BigQuery extends common.Service {
 
         if (query.types) {
           if (!is.array(query.types)) {
-            throw new Error(
+            callback!(new Error(
               'Provided types must match the value type passed to `params`'
-            );
+            ));
+            return;
           }
 
           if (query.params.length !== query.types.length) {
-            throw new Error('Incorrect number of parameter types provided.');
+            callback!(new Error('Incorrect number of parameter types provided.'));
+            return;
           }
           query.params.forEach((value: {}, i: number) => {
             const queryParameter = BigQuery.valueToQueryParameter_(
