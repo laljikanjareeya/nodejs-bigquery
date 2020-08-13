@@ -46,7 +46,7 @@ describe('Routine', () => {
       .catch(console.warn);
   });
 
-  it.only('should create routine via dll', async () => {
+  it('should create routine via ddl', async () => {
     const output = execSync(
       `node ddlCreateRoutine.js ${projectId} ${datasetId} ${routineId}`
     );
@@ -59,7 +59,7 @@ describe('Routine', () => {
     assert.strictEqual(exists, true);
   });
 
-  it.only('should create routine.', async () => {
+  it('should create routine.', async () => {
     const routineId = generateUuid();
     const output = execSync(`node createRoutine.js ${datasetId} ${routineId}`);
 
@@ -71,7 +71,27 @@ describe('Routine', () => {
     assert.strictEqual(exists, true);
   });
 
-  it.only('should delete routine.', async () => {
+  it('should retrieve a routine if it exists', async () => {
+    const output = execSync(`node getRoutine.js ${datasetId} ${routineId}`);
+    assert.include(output, 'Routine:');
+    assert.include(output, datasetId && routineId);
+  });
+
+  it('should list routines', async () => {
+    const output = execSync(`node listRoutines.js ${datasetId}`);
+    assert.include(output, 'Routines:');
+    assert.include(output, datasetId);
+  });
+
+  it("should update routine's metadata", async () => {
+    const output = execSync(`node updateRoutine.js ${datasetId} ${routineId}`);
+    assert.include(
+      output,
+      `${routineId} description: The perfect description!`
+    );
+  });
+
+  it('should delete routine.', async () => {
     const output = execSync(`node deleteRoutine.js ${datasetId} ${routineId}`);
 
     assert.include(output, `Routine ${routineId} deleted.`);
