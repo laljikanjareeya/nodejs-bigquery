@@ -14,45 +14,30 @@
 
 'use strict';
 
-function main(
-  projectId = 'my_project_id',
-  datasetId = 'my_dataset',
-  routineId = 'my_routine'
-) {
-  // [START bigquery_create_routine_ddl]
+function main(datasetId = 'my_dataset', routineId = 'my_routine') {
+  // [START bigquery_delete_routine]
   // Import the Google Cloud client library
   const {BigQuery} = require('@google-cloud/bigquery');
   const bigquery = new BigQuery();
 
-  async function createRoutine() {
-    // Creates a routine named "my_routine" in "my_dataset".
+  async function deleteRoutine() {
+    // Deletes a routine named "my_routine" in "my_dataset".
 
     /**
      * TODO(developer): Uncomment the following lines before running the sample
      */
-    // const projectId = "my_project_id";
     // const datasetId = "my_dataset";
     // const routineId = "my_routine";
 
-    const query = `CREATE FUNCTION \`${projectId}.${datasetId}.${routineId}\`(
-        arr ARRAY<STRUCT<name STRING, val INT64>>
-      ) AS (
-        (SELECT SUM(IF(elem.name = "foo",elem.val,null)) FROM UNNEST(arr) AS elem)
-      )`;
+    const dataset = bigquery.dataset(datasetId);
 
-    const queryOptions = {
-      query: query,
-    };
+    const routine = dataset.routine(routineId);
 
-    // Run query to create a routine
-    const [job] = await bigquery.createQueryJob(queryOptions);
+    await routine.delete();
 
-    // Wait for the query to finish
-    await job.getQueryResults();
-
-    console.log(`Routine ${routineId} created.`);
+    console.log(`Routine ${routineId} deleted.`);
   }
-  // [END bigquery_create_routine_ddl]
-  createRoutine();
+  // [END bigquery_delete_routine]
+  deleteRoutine();
 }
 main(...process.argv.slice(2));

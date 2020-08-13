@@ -46,7 +46,7 @@ describe('Routine', () => {
       .catch(console.warn);
   });
 
-  it('should create routine via dll', async () => {
+  it.only('should create routine via dll', async () => {
     const output = execSync(
       `node ddlCreateRoutine.js ${projectId} ${datasetId} ${routineId}`
     );
@@ -57,5 +57,28 @@ describe('Routine', () => {
       .routine(routineId)
       .exists();
     assert.strictEqual(exists, true);
+  });
+
+  it.only('should create routine.', async () => {
+    const routineId = generateUuid();
+    const output = execSync(`node createRoutine.js ${datasetId} ${routineId}`);
+
+    assert.include(output, `Routine ${routineId} created.`);
+    const [exists] = await bigquery
+      .dataset(datasetId)
+      .routine(routineId)
+      .exists();
+    assert.strictEqual(exists, true);
+  });
+
+  it.only('should delete routine.', async () => {
+    const output = execSync(`node deleteRoutine.js ${datasetId} ${routineId}`);
+
+    assert.include(output, `Routine ${routineId} deleted.`);
+    const [exists] = await bigquery
+      .dataset(datasetId)
+      .routine(routineId)
+      .exists();
+    assert.strictEqual(exists, false);
   });
 });

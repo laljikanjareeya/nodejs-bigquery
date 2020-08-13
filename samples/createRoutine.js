@@ -14,12 +14,8 @@
 
 'use strict';
 
-function main(
-  projectId = 'my_project_id',
-  datasetId = 'my_dataset',
-  routineId = 'my_routine'
-) {
-  // [START bigquery_create_routine_ddl]
+function main(datasetId = 'my_dataset', routineId = 'my_routine') {
+  // [START bigquery_create_routine]
   // Import the Google Cloud client library
   const {BigQuery} = require('@google-cloud/bigquery');
   const bigquery = new BigQuery();
@@ -30,29 +26,32 @@ function main(
     /**
      * TODO(developer): Uncomment the following lines before running the sample
      */
-    // const projectId = "my_project_id";
     // const datasetId = "my_dataset";
     // const routineId = "my_routine";
 
-    const query = `CREATE FUNCTION \`${projectId}.${datasetId}.${routineId}\`(
-        arr ARRAY<STRUCT<name STRING, val INT64>>
-      ) AS (
-        (SELECT SUM(IF(elem.name = "foo",elem.val,null)) FROM UNNEST(arr) AS elem)
-      )`;
-
-    const queryOptions = {
-      query: query,
+    const config = {
+      arguments: [
+        {
+          name: 'x',
+          dataType: {
+            typeKind: 'INT64',
+          },
+        },
+      ],
+      definitionBody: 'x * 3',
+      routineType: 'SCALAR_FUNCTION',
+      returnType: {
+        typeKind: 'INT64',
+      },
     };
 
-    // Run query to create a routine
-    const [job] = await bigquery.createQueryJob(queryOptions);
+    const dataset = bigquery.dataset(datasetId);
 
-    // Wait for the query to finish
-    await job.getQueryResults();
+    await dataset.createRoutine(routineId, config);
 
     console.log(`Routine ${routineId} created.`);
   }
-  // [END bigquery_create_routine_ddl]
+  // [END bigquery_create_routine]
   createRoutine();
 }
 main(...process.argv.slice(2));
